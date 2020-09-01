@@ -34,6 +34,7 @@ public class Minion {
 
     private static final String COMMENT_START_UNIX = "#";
     private static final String COMMENT_START_WINDOWS = ";";
+    private static final String COMMENT_START_SLASH = " //";
     private static final String GROUP_START = "[";
     private static final String GROUP_END = "]";
     private static final String KEY_VALUE_DIVIDER = "=";
@@ -266,8 +267,20 @@ public class Minion {
                     String value = line.substring(index + 1);
 
                     String[] arrayValue = value.split(ARRAY_VALUE_DELIMITER);
-
+                    String last = arrayValue[arrayValue.length - 1];
+                    index = last.indexOf(COMMENT_START_SLASH);
+                    if (index != -1) {
+                        arrayValue[arrayValue.length - 1] = last.substring(0, index).trim();
+                    }
                     lastGroup.getOrCreateRecord(key, arrayValue);
+                } else if (line.contains(ARRAY_VALUE_DELIMITER)) {
+                    String[] arrayValue = line.split(ARRAY_VALUE_DELIMITER);
+                    String last = arrayValue[arrayValue.length - 1];
+                    int index = last.indexOf(COMMENT_START_SLASH);
+                    if (index != -1) {
+                        arrayValue[arrayValue.length - 1] = last.substring(0, index).trim();
+                    }
+                    lastGroup.getOrCreateRecord(line, arrayValue);
                 }
             }
         } finally {
