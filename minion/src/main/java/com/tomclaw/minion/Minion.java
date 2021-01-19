@@ -27,31 +27,37 @@ import static com.tomclaw.minion.StringHelper.join;
 /**
  * Created by solkin on 27.07.17.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
+@SuppressWarnings({"WeakerAccess", "UnusedReturnValue"})
 public class Minion {
 
     public static final String DEFAULT_GROUP_NAME = "";
 
     private static final String COMMENT_START_UNIX = "#";
     private static final String COMMENT_START_WINDOWS = ";";
-    private static final String COMMENT_START_SLASH = " //";
+    private static final String COMMENT_START_SLASH = "//";
+    private static final String COMMENT_END_SLASH = " //";
     private static final String GROUP_START = "[";
     private static final String GROUP_END = "]";
     private static final String KEY_VALUE_DIVIDER = "=";
     private static final String ARRAY_VALUE_DELIMITER = ",";
 
-    private static Executor executor = Executors.newSingleThreadExecutor();
+    private static final Executor executor = Executors.newSingleThreadExecutor();
 
     private final Readable readable;
     private final Writable writable;
     private final boolean async;
 
+    private String content = "";
     private final Map<String, IniGroup> groups = new LinkedHashMap<>();
 
     private Minion(Readable readable, Writable writable, boolean async) {
         this.readable = readable;
         this.writable = writable;
         this.async = async;
+    }
+
+    public String getContent() {
+        return content;
     }
 
     @Nullable
@@ -246,9 +252,12 @@ public class Minion {
             reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             IniGroup lastGroup = new IniGroup(DEFAULT_GROUP_NAME);
+            StringBuilder contentBuilder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
+                contentBuilder.append(line).append('\n');
                 line = line.trim();
-                if (line.startsWith(COMMENT_START_UNIX) || line.startsWith(COMMENT_START_WINDOWS)) {
+                if (line.startsWith(COMMENT_START_UNIX) || line.startsWith(COMMENT_START_WINDOWS)
+                        || line.startsWith(COMMENT_START_SLASH)) {
                     continue;
                 }
 
@@ -268,7 +277,7 @@ public class Minion {
 
                     String[] arrayValue = value.split(ARRAY_VALUE_DELIMITER);
                     String last = arrayValue[arrayValue.length - 1];
-                    index = last.indexOf(COMMENT_START_SLASH);
+                    index = last.indexOf(COMMENT_END_SLASH);
                     if (index != -1) {
                         arrayValue[arrayValue.length - 1] = last.substring(0, index).trim();
                     }
@@ -276,13 +285,14 @@ public class Minion {
                 } else if (line.contains(ARRAY_VALUE_DELIMITER)) {
                     String[] arrayValue = line.split(ARRAY_VALUE_DELIMITER);
                     String last = arrayValue[arrayValue.length - 1];
-                    int index = last.indexOf(COMMENT_START_SLASH);
+                    int index = last.indexOf(COMMENT_END_SLASH);
                     if (index != -1) {
                         arrayValue[arrayValue.length - 1] = last.substring(0, index).trim();
                     }
                     lastGroup.getOrCreateRecord(line, arrayValue);
                 }
             }
+            content = contentBuilder.toString();
         } finally {
             safeClose(reader);
         }
