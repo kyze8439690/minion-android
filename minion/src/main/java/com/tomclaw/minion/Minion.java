@@ -292,6 +292,10 @@ public class Minion {
                     lastGroup.getOrCreateRecord(line, arrayValue);
                 }
             }
+            if (contentBuilder.length() > 0
+                    && contentBuilder.charAt(contentBuilder.length() - 1) == '\n') {
+                contentBuilder.deleteCharAt(contentBuilder.length() - 1);
+            }
             content = contentBuilder.toString();
         } finally {
             safeClose(reader);
