@@ -23,11 +23,11 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.4.0-alpha03', {
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.4.0-beta01', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation 'androidx.annotation:annotation:1.1.0'
-    testImplementation 'junit:junit:4.13.1'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 ext {
