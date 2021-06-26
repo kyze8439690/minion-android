@@ -20,7 +20,7 @@ public class IniGroup {
     private final Map<String, IniRecord> records;
 
     protected IniGroup(@NonNull String name) {
-        this(name, new LinkedHashMap<String, IniRecord>());
+        this(name, new LinkedHashMap<>());
     }
 
     protected IniGroup(@NonNull String name, @NonNull Map<String, IniRecord> records) {

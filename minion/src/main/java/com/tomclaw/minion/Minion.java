@@ -267,7 +267,8 @@ public class Minion {
                     continue;
                 }
 
-                if (line.contains(KEY_VALUE_DIVIDER)) {
+                if (line.contains(KEY_VALUE_DIVIDER)
+                        && !line.split(KEY_VALUE_DIVIDER)[0].contains(ARRAY_VALUE_DELIMITER)) {
                     int index = line.indexOf(KEY_VALUE_DIVIDER);
                     if (index <= 0) {
                         throw new UnsupportedFormatException();
