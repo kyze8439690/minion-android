@@ -13,9 +13,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -268,7 +270,7 @@ public class Minion {
                 }
 
                 if (line.contains(KEY_VALUE_DIVIDER)
-                        && !line.split(KEY_VALUE_DIVIDER)[0].contains(ARRAY_VALUE_DELIMITER)) {
+                        && shouldTreatAsKeyValueGroup(line.split(KEY_VALUE_DIVIDER)[0].trim())) {
                     int index = line.indexOf(KEY_VALUE_DIVIDER);
                     if (index <= 0) {
                         throw new UnsupportedFormatException();
@@ -277,12 +279,29 @@ public class Minion {
                     String value = line.substring(index + 1);
 
                     String[] arrayValue = value.split(ARRAY_VALUE_DELIMITER);
-                    String last = arrayValue[arrayValue.length - 1];
-                    index = last.indexOf(COMMENT_END_SLASH);
-                    if (index != -1) {
-                        arrayValue[arrayValue.length - 1] = last.substring(0, index).trim();
+                    List<String> values = new ArrayList<>();
+                    for (int i = 0; i < arrayValue.length; i++) {
+                        if (i == arrayValue.length - 1) {
+                            String last = arrayValue[i];
+                            index = last.indexOf(COMMENT_END_SLASH);
+                            if (index != -1) {
+                                values.add(last.substring(0, index).trim());
+                            } else {
+                                values.add(last);
+                            }
+                        } else {
+                            String current = arrayValue[i].trim();
+                            String next = arrayValue[i + 1].trim();
+                            if (current.startsWith("\"") && !current.endsWith("\"")
+                                    && !next.startsWith("\"") && next.endsWith("\"")) {
+                                values.add((arrayValue[i] + "," + arrayValue[i + 1]));
+                                i++;
+                            } else {
+                                values.add(current);
+                            }
+                        }
                     }
-                    lastGroup.getOrCreateRecord(key, arrayValue);
+                    lastGroup.getOrCreateRecord(key, values.toArray(new String[0]));
                 } else if (line.contains(ARRAY_VALUE_DELIMITER)) {
                     String[] arrayValue = line.split(ARRAY_VALUE_DELIMITER);
                     String last = arrayValue[arrayValue.length - 1];
@@ -301,6 +320,10 @@ public class Minion {
         } finally {
             safeClose(reader);
         }
+    }
+
+    private boolean shouldTreatAsKeyValueGroup(String key) {
+        return (!key.contains(ARRAY_VALUE_DELIMITER) || (key.startsWith("\"") && key.endsWith("\"")));
     }
 
     public static Builder lets() {
