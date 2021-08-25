@@ -49,17 +49,12 @@ public class Minion {
     private final Writable writable;
     private final boolean async;
 
-    private String content = "";
     private final Map<String, IniGroup> groups = new LinkedHashMap<>();
 
     private Minion(Readable readable, Writable writable, boolean async) {
         this.readable = readable;
         this.writable = writable;
         this.async = async;
-    }
-
-    public String getContent() {
-        return content;
     }
 
     @Nullable
@@ -254,9 +249,7 @@ public class Minion {
             reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
             IniGroup lastGroup = new IniGroup(DEFAULT_GROUP_NAME);
-            StringBuilder contentBuilder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
-                contentBuilder.append(line).append('\n');
                 line = line.trim();
                 if (line.startsWith(COMMENT_START_UNIX) || line.startsWith(COMMENT_START_WINDOWS)
                         || line.startsWith(COMMENT_START_SLASH)) {
@@ -312,11 +305,6 @@ public class Minion {
                     lastGroup.getOrCreateRecord(line, arrayValue);
                 }
             }
-            if (contentBuilder.length() > 0
-                    && contentBuilder.charAt(contentBuilder.length() - 1) == '\n') {
-                contentBuilder.deleteCharAt(contentBuilder.length() - 1);
-            }
-            content = contentBuilder.toString();
         } finally {
             safeClose(reader);
         }
