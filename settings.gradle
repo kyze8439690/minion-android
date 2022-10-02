@@ -1,1 +1,1 @@
-include ':app', ':minion'
+include ':minion'
