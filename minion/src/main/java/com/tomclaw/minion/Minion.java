@@ -235,8 +235,10 @@ public class Minion {
 
     private void loadSync(@NonNull ResultCallback callback) {
         try {
-            final InputStream inputStream = readable.read();
-            parse(inputStream);
+            if (readable != null) {
+                final InputStream inputStream = readable.read();
+                parse(inputStream);
+            }
             callback.onReady(this);
         } catch (Exception ex) {
             callback.onFailure(ex);
@@ -345,10 +347,25 @@ public class Minion {
             return this;
         }
 
-        public Minion sync() {
+        public Minion sync() throws Exception {
             this.async = false;
-            this.callback = new EmptyResultCallback();
-            return build();
+            final Exception[] e = {null};
+            this.callback = new ResultCallback() {
+                @Override
+                public void onReady(Minion minion) {
+
+                }
+
+                @Override
+                public void onFailure(Exception ex) {
+                    e[0] = ex;
+                }
+            };
+            Minion minion = build();
+            if (e[0] != null) {
+                throw e[0];
+            }
+            return minion;
         }
 
         public Minion async(@NonNull ResultCallback callback) {

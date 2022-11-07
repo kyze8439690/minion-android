@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNull;
 public class MinionUnitTest {
 
     @Test
-    public void loadDataSync_isCorrect() {
+    public void loadDataSync_isCorrect() throws Exception {
         String data = "[first_group]\nfirst_key=first_value\n[second_group]\n" +
                 "#comment\n;comment\n" +
                 "second_key=second_value\narray_key=value1 , value2 , value3";
@@ -56,7 +56,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getGroup_doNotCreateGroupIfNotExist() {
+    public void getGroup_doNotCreateGroupIfNotExist() throws Exception {
         MemoryStorage storage = MemoryStorage.create();
         Minion minion = Minion.lets()
                 .load(storage)
@@ -69,7 +69,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getGroupNames_returnGroupNamesCorrectly() {
+    public void getGroupNames_returnGroupNamesCorrectly() throws Exception {
         MemoryStorage storage = MemoryStorage.create();
         Minion minion = Minion.lets()
                 .load(storage)
@@ -83,7 +83,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getGroupsCount_returnGroupsCountCorrectly() {
+    public void getGroupsCount_returnGroupsCountCorrectly() throws Exception {
         MemoryStorage storage = MemoryStorage.create();
         Minion minion = Minion.lets()
                 .load(storage)
@@ -97,7 +97,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getGroups_returnGroupsCorrectly() {
+    public void getGroups_returnGroupsCorrectly() throws Exception {
         IniGroup[] original = new IniGroup[]{
                 new IniGroup("test_group_1"),
                 new IniGroup("test_group_2")
@@ -115,7 +115,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getOrCreateGroup_createGroupIfNotExist() {
+    public void getOrCreateGroup_createGroupIfNotExist() throws Exception {
         String name = "test_group";
         MemoryStorage storage = MemoryStorage.create();
         Minion minion = Minion.lets()
@@ -130,7 +130,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void removeGroup_removeGroupCorrectly() {
+    public void removeGroup_removeGroupCorrectly() throws Exception {
         String name = "test_group";
         MemoryStorage storage = MemoryStorage.create();
         Minion minion = Minion.lets()
@@ -145,7 +145,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void clear_removeAllGroups() {
+    public void clear_removeAllGroups() throws Exception {
         MemoryStorage storage = MemoryStorage.create();
         Minion minion = Minion.lets()
                 .load(storage)
@@ -161,7 +161,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void setValue_setsValueCorrectly() {
+    public void setValue_setsValueCorrectly() throws Exception {
         String name = "test_group";
         String key = "test_key";
         String value = "test_value";
@@ -177,7 +177,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void removeRecord_removesRecordAndReturnIt_ifRecordExist() {
+    public void removeRecord_removesRecordAndReturnIt_ifRecordExist() throws Exception {
         String name = "test_group";
         String key = "test_key";
         String value = "test_value";
@@ -195,7 +195,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void removeRecord_removesRecordAndReturnNull_ifRecordDoesNotExist() {
+    public void removeRecord_removesRecordAndReturnNull_ifRecordDoesNotExist() throws Exception {
         String name = "test_group";
         String key = "test_key";
         String value = "test_value";
@@ -211,7 +211,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getValue_getsValueCorrectly_noDefaultValue() {
+    public void getValue_getsValueCorrectly_noDefaultValue() throws Exception {
         String name = "test_group";
         String key = "test_key";
         String value = "test_value";
@@ -227,7 +227,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getValue_returnsNull_noSuchRecordAndNoDefaultValue() {
+    public void getValue_returnsNull_noSuchRecordAndNoDefaultValue() throws Exception {
         String name = "test_group";
         String key = "test_key";
         MemoryStorage storage = MemoryStorage.create();
@@ -241,7 +241,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getValue_returnsDefaultValue_noSuchRecordButDefaultValueSpecified() {
+    public void getValue_returnsDefaultValue_noSuchRecordButDefaultValueSpecified() throws Exception {
         String name = "test_group";
         String key = "test_key";
         String defValue = "test_def_value";
@@ -256,7 +256,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getValues_getsValuesCorrectly_noDefaultValue() {
+    public void getValues_getsValuesCorrectly_noDefaultValue() throws Exception {
         String name = "test_group";
         String key = "test_key";
         String value1 = "test_value1";
@@ -274,7 +274,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getValues_returnsNull_noSuchRecordsAndNoDefaultValue() {
+    public void getValues_returnsNull_noSuchRecordsAndNoDefaultValue() throws Exception {
         String name = "test_group";
         String key = "test_key";
         MemoryStorage storage = MemoryStorage.create();
@@ -288,7 +288,7 @@ public class MinionUnitTest {
     }
 
     @Test
-    public void getValues_returnsDefaultValue_noSuchRecordButDefaultValueSpecified() {
+    public void getValues_returnsDefaultValue_noSuchRecordButDefaultValueSpecified() throws Exception {
         String name = "test_group";
         String key = "test_key";
         String[] defValue = new String[]{"test_value1", "test_value2", "test_value3"};
