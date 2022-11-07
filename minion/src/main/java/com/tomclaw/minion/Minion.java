@@ -266,7 +266,9 @@ public class Minion {
                         && shouldTreatAsKeyValueGroup(line.split(KEY_VALUE_DIVIDER)[0].trim())) {
                     int index = line.indexOf(KEY_VALUE_DIVIDER);
                     if (index <= 0) {
-                        throw new UnsupportedFormatException();
+                        UnsupportedFormatException e = new UnsupportedFormatException(line);
+                        e.printStackTrace();
+                        throw e;
                     }
                     String key = line.substring(0, index).trim();
                     String value = line.substring(index + 1);
