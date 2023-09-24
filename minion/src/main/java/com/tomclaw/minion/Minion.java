@@ -1,5 +1,12 @@
 package com.tomclaw.minion;
 
+import static com.tomclaw.minion.StreamHelper.safeClose;
+import static com.tomclaw.minion.StringHelper.containsChar;
+import static com.tomclaw.minion.StringHelper.endsWithChar;
+import static com.tomclaw.minion.StringHelper.join;
+import static com.tomclaw.minion.StringHelper.splitByChar;
+import static com.tomclaw.minion.StringHelper.startsWithChar;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -14,7 +21,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -23,13 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import static com.tomclaw.minion.StreamHelper.safeClose;
-import static com.tomclaw.minion.StringHelper.containsChar;
-import static com.tomclaw.minion.StringHelper.endsWithChar;
-import static com.tomclaw.minion.StringHelper.join;
-import static com.tomclaw.minion.StringHelper.splitByChar;
-import static com.tomclaw.minion.StringHelper.startsWithChar;
 
 /**
  * Created by solkin on 27.07.17.
@@ -282,6 +281,29 @@ public class Minion {
                     String value = line.substring(index + 1);
 
                     List<String> arrayValue = splitByChar(value, ARRAY_VALUE_DELIMITER);
+                    // merge value wrapped by double quote
+                    List<Integer> indexToRemove = new ArrayList<>();
+                    for (int i = 0; i < arrayValue.size(); i++) {
+                        String current = arrayValue.get(i);
+                        int currentDoubleQuoteCount = 0;
+                        for (int j = 0; j < current.length(); j++) {
+                            if (current.charAt(j) == '"') {
+                                currentDoubleQuoteCount++;
+                            }
+                        }
+                        if (currentDoubleQuoteCount == 1) {
+                            if (i + 1 < arrayValue.size()) {
+                                String next = arrayValue.get(i + 1);
+                                if (next.trim().endsWith("\"")) {
+                                    arrayValue.set(i, current + "," + next);
+                                    indexToRemove.add(i + 1);
+                                }
+                            }
+                        }
+                    }
+                    for (int i = 0; i < indexToRemove.size(); i++) {
+                        arrayValue.remove((int) indexToRemove.get(i));
+                    }
                     List<String> values = new ArrayList<>();
                     for (int i = 0; i < arrayValue.size(); i++) {
                         if (i == arrayValue.size() - 1) {
