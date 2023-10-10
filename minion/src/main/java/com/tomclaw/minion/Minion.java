@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -249,6 +250,16 @@ public class Minion {
         }
     }
 
+    private int charCountInString(String str, char c) {
+        int count = 0;
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) == c) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private void parse(@NonNull InputStream inputStream) throws IOException, UnsupportedFormatException {
         BufferedReader reader = null;
         try {
@@ -282,28 +293,45 @@ public class Minion {
 
                     List<String> arrayValue = splitByChar(value, ARRAY_VALUE_DELIMITER);
                     // merge value wrapped by double quote
+                    StringBuilder builder = new StringBuilder();
+                    boolean ended = false;
                     List<Integer> indexToRemove = new ArrayList<>();
-                    for (int i = 0; i < arrayValue.size(); i++) {
-                        String current = arrayValue.get(i);
-                        int currentDoubleQuoteCount = 0;
-                        for (int j = 0; j < current.length(); j++) {
-                            if (current.charAt(j) == '"') {
-                                currentDoubleQuoteCount++;
-                            }
-                        }
+                    for (int currentIndex = 0; currentIndex < arrayValue.size(); currentIndex++) {
+                        String current = arrayValue.get(currentIndex);
+                        int currentDoubleQuoteCount = charCountInString(current, '"');
                         if (currentDoubleQuoteCount == 1) {
-                            if (i + 1 < arrayValue.size()) {
-                                String next = arrayValue.get(i + 1);
-                                if (next.trim().endsWith("\"")) {
-                                    arrayValue.set(i, current + "," + next);
-                                    indexToRemove.add(i + 1);
+                            if (builder.length() == 0) {
+                                // start
+                                builder.append(current);
+                                indexToRemove.add(currentIndex);
+                            } else {
+                                if (current.trim().endsWith("\"")) {
+                                    // end
+                                    builder.append(",").append(current);
+                                    indexToRemove.add(currentIndex);
+                                    ended = true;
                                 }
                             }
+                        } else if (currentDoubleQuoteCount == 0 && (builder.length() > 0)) {
+                            // middle
+                            builder.append(",").append(current);
+                            indexToRemove.add(currentIndex);
+                        }
+                        if (ended) {
+                            break;
                         }
                     }
-                    for (int i = 0; i < indexToRemove.size(); i++) {
-                        arrayValue.remove((int) indexToRemove.get(i));
+
+                    if (ended) {
+                        for (int i = indexToRemove.size() - 1; i >= 0; i--) {
+                            int arrayIndex = indexToRemove.get(i).intValue();
+                            arrayValue.remove(arrayIndex);
+                            if (i == 0) {
+                                arrayValue.add(arrayIndex, builder.toString());
+                            }
+                        }
                     }
+
                     List<String> values = new ArrayList<>();
                     for (int i = 0; i < arrayValue.size(); i++) {
                         if (i == arrayValue.size() - 1) {
