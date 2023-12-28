@@ -274,8 +274,9 @@ public class Minion {
                     continue;
                 }
 
-                if (startsWithChar(line, GROUP_START) && endsWithChar(line, GROUP_END)) {
-                    String name = line.substring(1, line.length() - 1);
+                if (startsWithChar(line, GROUP_START) && containsChar(line, GROUP_END)) {
+                    int end = line.indexOf(GROUP_END);
+                    String name = line.substring(1, end);
                     lastGroup = addGroup(name);
                     continue;
                 }
