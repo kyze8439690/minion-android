@@ -275,10 +275,25 @@ public class Minion {
                 }
 
                 if (startsWithChar(line, GROUP_START) && containsChar(line, GROUP_END)) {
-                    int end = line.indexOf(GROUP_END);
-                    String name = line.substring(1, end);
-                    lastGroup = addGroup(name);
-                    continue;
+                    boolean groupEnded = false;
+                    if (endsWithChar(line.trim(), GROUP_END)) {
+                        groupEnded = true;
+                    } else if (line.contains(COMMENT_START_SLASH) &&
+                            endsWithChar(line.split(COMMENT_START_SLASH)[0].trim(), GROUP_END)) {
+                        groupEnded = true;
+                    } else if (containsChar(line, COMMENT_START_WINDOWS) &&
+                            endsWithChar(splitByChar(line, COMMENT_START_WINDOWS).get(0).trim(), GROUP_END)) {
+                        groupEnded = true;
+                    } else if (containsChar(line, COMMENT_START_UNIX) &&
+                            endsWithChar(splitByChar(line, COMMENT_START_UNIX).get(0).trim(), GROUP_END)) {
+                        groupEnded = true;
+                    }
+                    if (groupEnded) {
+                        int end = line.indexOf(GROUP_END);
+                        String name = line.substring(1, end);
+                        lastGroup = addGroup(name);
+                        continue;
+                    }
                 }
 
                 if (containsChar(line, KEY_VALUE_DIVIDER)
@@ -325,7 +340,7 @@ public class Minion {
 
                     if (ended) {
                         for (int i = indexToRemove.size() - 1; i >= 0; i--) {
-                            int arrayIndex = indexToRemove.get(i).intValue();
+                            int arrayIndex = indexToRemove.get(i);
                             arrayValue.remove(arrayIndex);
                             if (i == 0) {
                                 arrayValue.add(arrayIndex, builder.toString());
