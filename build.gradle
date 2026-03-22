@@ -1,27 +1,57 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply plugin: 'com.android.library'
 
-buildscript {
-    repositories {
-        mavenCentral()
-        google()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.3'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+android {
+    compileSdkVersion 36
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 36
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
     }
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    namespace 'com.tomclaw.minion'
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        google()
-    }
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.6.1', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    implementation 'androidx.annotation:annotation:1.9.1'
+    testImplementation 'junit:junit:4.13.2'
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+ext {
+    bintrayRepo = 'minion'
+    bintrayName = 'minion-android'
+
+    publishedGroupId = 'com.tomclaw.minion'
+    libraryName = 'minion'
+    artifact = 'minion'
+
+    libraryDescription = 'Minion is a handy group-key-value data storage library, powered by INI format'
+
+    siteUrl = 'https://github.com/solkin/minion-android'
+    gitUrl = 'https://github.com/solkin/minion-android.git'
+
+    libraryVersion = '1.1.2'
+
+    developerId = 'solkin'
+    developerName = 'Igor Solkin'
+    developerEmail = 'inbox@tomclaw.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
 }
+
+//apply from: '../install.gradle'
+//apply from: '../bintray.gradle'
