@@ -1,8 +1,8 @@
 package com.tomclaw.minion;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * Created by ivsolkin on 28/09/2017.

@@ -1,5 +1,10 @@
 package com.tomclaw.minion;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import com.tomclaw.minion.storage.MemoryStorage;
 import com.tomclaw.minion.storage.Readable;
 import com.tomclaw.minion.storage.StringStorage;
@@ -12,11 +17,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Set;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * Created by solkin on 01.08.17.
