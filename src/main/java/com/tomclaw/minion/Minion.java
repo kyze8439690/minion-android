@@ -42,6 +42,8 @@ public class Minion {
     private static final char COMMENT_START_WINDOWS = ';';
     private static final String COMMENT_START_SLASH = "//";
     private static final String COMMENT_END_SLASH = " //";
+    private static final String COMMENT_END_UNIX = " #";
+    private static final String COMMENT_END_WINDOWS = " ;";
     private static final char GROUP_START = '[';
     private static final char GROUP_END = ']';
     private static final char KEY_VALUE_DIVIDER = '=';
@@ -351,7 +353,7 @@ public class Minion {
                     for (int i = 0; i < arrayValue.size(); i++) {
                         if (i == arrayValue.size() - 1) {
                             String last = arrayValue.get(i);
-                            index = last.indexOf(COMMENT_END_SLASH);
+                            index = indexOfComment(last);
                             if (index != -1) {
                                 values.add(last.substring(0, index).trim());
                             } else {
@@ -373,9 +375,9 @@ public class Minion {
                 } else if (containsChar(line, ARRAY_VALUE_DELIMITER)) {
                     List<String> arrayValue = splitByChar(line, ARRAY_VALUE_DELIMITER);
                     String last = arrayValue.get(arrayValue.size() - 1);
-                    int index = last.indexOf(COMMENT_END_SLASH);
-                    if (index != -1) {
-                        arrayValue.set(arrayValue.size() - 1, last.substring(0, index).trim());
+                    int cIndex = indexOfComment(last);
+                    if (cIndex != -1) {
+                        arrayValue.set(arrayValue.size() - 1, last.substring(0, cIndex).trim());
                     }
                     lastGroup.getOrCreateRecord(line, arrayValue.toArray(new String[0]));
                 }
@@ -387,6 +389,17 @@ public class Minion {
 
     private boolean shouldTreatAsKeyValueGroup(String key) {
         return !containsChar(key, ARRAY_VALUE_DELIMITER) || (startsWithChar(key, '"') && endsWithChar(key, '"'));
+    }
+
+    private static int indexOfComment(String value) {
+        int index = value.indexOf(COMMENT_END_SLASH);
+        if (index == -1) {
+            index = value.indexOf(COMMENT_END_UNIX);
+        }
+        if (index == -1) {
+            index = value.indexOf(COMMENT_END_WINDOWS);
+        }
+        return index;
     }
 
     public static Builder lets() {

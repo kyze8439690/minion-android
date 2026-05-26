@@ -39,6 +39,45 @@ public class MinionUnitTest {
     }
 
     @Test
+    public void loadDataSync_inlineCommentSlash() throws Exception {
+        String data = "[group]\nkey=value1 // comment";
+        Minion minion = Minion.lets()
+                .load(StringStorage.create(data))
+                .sync();
+        assertEquals("value1", minion.getValue("group", "key"));
+    }
+
+    @Test
+    public void loadDataSync_inlineCommentHash() throws Exception {
+        String data = "[group]\nkey=value1 # comment";
+        Minion minion = Minion.lets()
+                .load(StringStorage.create(data))
+                .sync();
+        assertEquals("value1", minion.getValue("group", "key"));
+    }
+
+    @Test
+    public void loadDataSync_inlineCommentSemicolon() throws Exception {
+        String data = "[group]\nkey=value1 ; comment";
+        Minion minion = Minion.lets()
+                .load(StringStorage.create(data))
+                .sync();
+        assertEquals("value1", minion.getValue("group", "key"));
+    }
+
+    @Test
+    public void loadDataSync_inlineCommentOnLastArrayElement() throws Exception {
+        String data = "[group]\nkey=value1 , value2 , value3 # comment";
+        Minion minion = Minion.lets()
+                .load(StringStorage.create(data))
+                .sync();
+        assertArrayEquals(
+                new String[]{"value1", "value2", "value3"},
+                minion.getValues("group", "key")
+        );
+    }
+
+    @Test
     public void storeDataSync_isCorrect() throws Exception {
         MemoryStorage storage = MemoryStorage.create();
         Minion minion = Minion.lets()
