@@ -5,7 +5,6 @@ android {
 
     defaultConfig {
         minSdkVersion 23
-        targetSdkVersion 36
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -14,10 +13,16 @@ android {
         release {
             minifyEnabled false
             shrinkResources = false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     namespace = 'com.tomclaw.minion'
+    lint {
+        targetSdk 36
+    }
+    testOptions {
+        targetSdk 36
+    }
 }
 
 dependencies {
