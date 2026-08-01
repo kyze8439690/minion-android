@@ -1,10 +1,10 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 36
+    compileSdk 36
 
     defaultConfig {
-        minSdkVersion 23
+        minSdk 23
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -17,12 +17,6 @@ android {
         }
     }
     namespace = 'com.tomclaw.minion'
-    lint {
-        targetSdk 36
-    }
-    testOptions {
-        targetSdk 36
-    }
 }
 
 dependencies {
