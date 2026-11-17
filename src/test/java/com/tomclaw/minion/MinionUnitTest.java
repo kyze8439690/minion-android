@@ -24,6 +24,27 @@ import java.util.Set;
 public class MinionUnitTest {
 
     @Test
+    public void loadDataSync_quotedKeysPreserveEqualsAndCommas() throws Exception {
+        String key = "\"region=HK, edge\"";
+        String data = "[Proxy]\n" + key + " = vless, proxy.example, 443, username=user\n"
+                + "[Rule]\nDOMAIN-REGEX,^a=b\\.example$,DIRECT";
+        Minion minion = Minion.lets().load(StringStorage.create(data)).sync();
+        assertArrayEquals(new String[]{"vless", "proxy.example", "443", "username=user"},
+                minion.getGroup("Proxy").getRecord(key).getValues());
+        assertEquals(1, minion.getGroup("Rule").getRecords().size());
+    }
+
+    @Test
+    public void loadDataSync_multipleQuotedCommaValues() throws Exception {
+        String data = "[Proxy]\nNode=vless, proxy.example, 443, username=\"user,a\", "
+                + "alpn=\"h2,http/1.1\", ws-headers=\"X-Name:a # b\" # comment";
+        Minion minion = Minion.lets().load(StringStorage.create(data)).sync();
+        assertArrayEquals(new String[]{"vless", "proxy.example", "443", "username=\"user,a\"",
+                "alpn=\"h2,http/1.1\"", "ws-headers=\"X-Name:a # b\""},
+                minion.getGroup("Proxy").getRecord("Node").getValues());
+    }
+
+    @Test
     public void loadDataSync_isCorrect() throws Exception {
         String data = "[first_group]\nfirst_key=first_value\n[second_group]\n" +
                 "#comment\n;comment\n" +
