@@ -251,16 +251,6 @@ public class Minion {
         }
     }
 
-    private int charCountInString(String str, char c) {
-        int count = 0;
-        for (int i = 0; i < str.length(); i++) {
-            if (str.charAt(i) == c) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     private void parse(@NonNull InputStream inputStream) throws IOException, UnsupportedFormatException {
         BufferedReader reader = null;
         try {
@@ -297,9 +287,10 @@ public class Minion {
                     }
                 }
 
-                if (containsChar(line, KEY_VALUE_DIVIDER)
-                        && shouldTreatAsKeyValueGroup(splitByChar(line, KEY_VALUE_DIVIDER).get(0).trim())) {
-                    int index = line.indexOf(KEY_VALUE_DIVIDER);
+                int keyValueIndex = indexOfKeyValueDivider(line);
+                if (keyValueIndex >= 0
+                        && shouldTreatAsKeyValueGroup(line.substring(0, keyValueIndex).trim())) {
+                    int index = keyValueIndex;
                     if (index <= 0) {
                         UnsupportedFormatException e = new UnsupportedFormatException(line);
                         e.printStackTrace();
@@ -308,69 +299,7 @@ public class Minion {
                     String key = line.substring(0, index).trim();
                     String value = line.substring(index + 1);
 
-                    List<String> arrayValue = splitByChar(value, ARRAY_VALUE_DELIMITER);
-                    // merge value wrapped by double quote
-                    StringBuilder builder = new StringBuilder();
-                    boolean ended = false;
-                    List<Integer> indexToRemove = new ArrayList<>();
-                    for (int currentIndex = 0; currentIndex < arrayValue.size(); currentIndex++) {
-                        String current = arrayValue.get(currentIndex);
-                        int currentDoubleQuoteCount = charCountInString(current, '"');
-                        if (currentDoubleQuoteCount == 1) {
-                            if (builder.length() == 0) {
-                                // start
-                                builder.append(current);
-                                indexToRemove.add(currentIndex);
-                            } else {
-                                if (current.trim().endsWith("\"")) {
-                                    // end
-                                    builder.append(",").append(current);
-                                    indexToRemove.add(currentIndex);
-                                    ended = true;
-                                }
-                            }
-                        } else if (currentDoubleQuoteCount == 0 && (builder.length() > 0)) {
-                            // middle
-                            builder.append(",").append(current);
-                            indexToRemove.add(currentIndex);
-                        }
-                        if (ended) {
-                            break;
-                        }
-                    }
-
-                    if (ended) {
-                        for (int i = indexToRemove.size() - 1; i >= 0; i--) {
-                            int arrayIndex = indexToRemove.get(i);
-                            arrayValue.remove(arrayIndex);
-                            if (i == 0) {
-                                arrayValue.add(arrayIndex, builder.toString());
-                            }
-                        }
-                    }
-
-                    List<String> values = new ArrayList<>();
-                    for (int i = 0; i < arrayValue.size(); i++) {
-                        if (i == arrayValue.size() - 1) {
-                            String last = arrayValue.get(i);
-                            index = indexOfComment(last);
-                            if (index != -1) {
-                                values.add(last.substring(0, index).trim());
-                            } else {
-                                values.add(last);
-                            }
-                        } else {
-                            String current = arrayValue.get(i).trim();
-                            String next = arrayValue.get(i + 1).trim();
-                            if (startsWithChar(current, '"') && !startsWithChar(current, '"')
-                                    && !startsWithChar(next, '"') && endsWithChar(next, '"')) {
-                                values.add((arrayValue.get(i) + "," + arrayValue.get(i + 1)));
-                                i++;
-                            } else {
-                                values.add(current);
-                            }
-                        }
-                    }
+                    List<String> values = splitQuotedValues(value);
                     lastGroup.getOrCreateRecord(key, values.toArray(new String[0]));
                 } else if (containsChar(line, ARRAY_VALUE_DELIMITER)) {
                     List<String> arrayValue = splitByChar(line, ARRAY_VALUE_DELIMITER);
@@ -385,6 +314,57 @@ public class Minion {
         } finally {
             safeClose(reader);
         }
+    }
+
+    /** Locate the key separator after a complete quoted key, preserving equals signs inside names. */
+    private static int indexOfKeyValueDivider(String line) {
+        int first = 0;
+        while (first < line.length() && Character.isWhitespace(line.charAt(first))) first++;
+        if (first == line.length() || (line.charAt(first) != '"' && line.charAt(first) != '\'')) {
+            return line.indexOf(KEY_VALUE_DIVIDER);
+        }
+        char quote = line.charAt(first);
+        boolean escaped = false;
+        for (int i = first + 1; i < line.length(); i++) {
+            char current = line.charAt(i);
+            if (escaped) escaped = false;
+            else if (current == '\\') escaped = true;
+            else if (current == quote) return line.indexOf(KEY_VALUE_DIVIDER, i + 1);
+        }
+        return -1;
+    }
+
+    /** Split INI values while preserving every quoted comma and escaped quote. */
+    private static List<String> splitQuotedValues(String value) {
+        List<String> values = new ArrayList<>();
+        int start = 0;
+        char quote = 0;
+        char previous = 0;
+        boolean escaped = false;
+        for (int i = 0; i < value.length(); i++) {
+            char current = value.charAt(i);
+            if (escaped) {
+                escaped = false;
+            } else if (quote != 0) {
+                if (current == '\\') escaped = true;
+                else if (current == quote) quote = 0;
+            } else if (current == '"' || (current == '\'' && (previous == 0 || previous == '='))) {
+                quote = current;
+            } else if (value.startsWith(COMMENT_END_SLASH, i)
+                    || value.startsWith(COMMENT_END_UNIX, i)
+                    || value.startsWith(COMMENT_END_WINDOWS, i)) {
+                values.add(value.substring(start, i).trim());
+                return values;
+            } else if (current == ARRAY_VALUE_DELIMITER) {
+                values.add(value.substring(start, i).trim());
+                start = i + 1;
+                previous = 0;
+                continue;
+            }
+            if (!Character.isWhitespace(current)) previous = current;
+        }
+        values.add(value.substring(start).trim());
+        return values;
     }
 
     private boolean shouldTreatAsKeyValueGroup(String key) {
